@@ -1,0 +1,57 @@
+version: '3.0'
+services:
+  macchina-edge:
+    image: "macchina/edge-ce"
+    restart: always
+    ports:
+      - "22080:22080"
+#   Note: enable privileged if you need to access GPIOs.
+#   privileged: true
+#   Note: uncomment (and modify) devices as required.
+#   The container will fail to start if any specified
+#   device is not available.
+#    devices:
+#      - "/dev/ttyACM0:/dev/ttyACM0"
+    volumes:
+      - macchina-edge-datavolume:/opt/macchina/var/lib
+
+  rmgateway:
+    image: "macchina/rmgateway"
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      DOMAIN: ${REMOTE_MANAGER_DOMAIN}
+    volumes:
+      - rmgateway-datavolume:/var/lib/rmgateway
+
+  portainer:
+    image: "portainer/portainer-ce"
+    restart: always
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-datavolume:/data
+
+  influxdb:
+    image: "influxdb:2.0"
+    restart: always
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-datavolume:/var/lib/influxdb2
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: macchina
+      DOCKER_INFLUXDB_INIT_PASSWORD: g67J4khmh7AQ
+      DOCKER_INFLUXDB_INIT_ORG: macchina
+      DOCKER_INFLUXDB_INIT_BUCKET: edge-demo
+      DOCKER_INFLUXDB_INIT_RETENTION: 1w
+
+volumes:
+  rmgateway-datavolume:
+  macchina-edge-datavolume:
+  portainer-datavolume:
+  influxdb-datavolume:
